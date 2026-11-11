@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nova City</title><style>
+*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#91b8d0;font-family:Arial,sans-serif;color:white}#hud{position:fixed;inset:0;pointer-events:none}#brand{position:absolute;top:18px;left:20px;font-weight:900;font-size:22px;letter-spacing:2px;text-shadow:0 2px 8px #123}#help{position:absolute;bottom:18px;left:20px;background:#071522bb;padding:12px 16px;border:1px solid #ffffff33;border-radius:10px;font-size:13px;line-height:1.7}#start{position:fixed;inset:0;display:grid;place-items:center;background:linear-gradient(#07152255,#071522bb)}#panel{pointer-events:auto;text-align:center;background:#10283beF;border:1px solid #ffffff33;padding:34px 42px;border-radius:18px;box-shadow:0 20px 70px #0008}#panel h1{font-size:42px;margin:0 0 8px;letter-spacing:4px}#panel p{color:#c5d7e5}button{border:0;background:#27a8e0;color:white;font-weight:bold;padding:13px 28px;border-radius:9px;font-size:15px;cursor:pointer}#status{position:absolute;right:20px;top:20px;background:#071522aa;padding:10px 14px;border-radius:9px;font-size:13px}
+</style></head><body><div id="hud"><div id="brand">NOVA CITY</div><div id="status">SERBEST DÜNYA</div><div id="help">W A S D — Hareket<br>SHIFT — Koş<br>SPACE — Zıpla<br>Fare — Kamerayı döndür<br>ESC — Fareyi serbest bırak</div></div><div id="start"><div id="panel"><h1>NOVA CITY</h1><p>Şehri keşfet. Özgürce dolaş.</p><button id="play">OYUNA BAŞLA</button></div></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9cc5df);scene.fog=new THREE.Fog(0x9cc5df,65,230);
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,400);
+const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=false;document.body.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xe7f5ff,0x65745a,2));const sun=new THREE.DirectionalLight(0xfff1d4,2.1);sun.position.set(-50,90,35);scene.add(sun);
+const mat=(c)=>new THREE.MeshStandardMaterial({color:c,roughness:1});
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(420,420),mat(0x66865d));ground.rotation.x=-Math.PI/2;ground.position.y=-.06;scene.add(ground);
+function box(x,y,z,sx,sy,sz,m){let o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),m);o.position.set(x,y,z);scene.add(o);return o}
+const road=mat(0x303943),side=mat(0xb5b7ad),line=mat(0xe5d9a5);
+for(let i=-3;i<=3;i++){let p=i*30;box(p,.01,0,9,.08,420,road);box(0,.01,p,420,.08,9,road);box(p+5,.03,0,1,.1,420,side);box(0,.03,p+5,420,.1,1,side);for(let k=-6;k<=6;k++){box(p,.07,k*30, .16,.02,7,line);box(k*30,.07,p,7,.02,.16,line)}}
+const buildingM=[0x9baeb8,0xc5b8a4,0x7e99a8,0xd0c9b8,0x87938e].map(mat);
+for(let x=-5;x<=5;x++)for(let z=-5;z<=5;z++){if(Math.abs(x)%1===0&&Math.abs(z)%1===0&&Math.abs(x*30%30)<1&&Math.abs(z*30%30)<1)continue;if(Math.abs(x*30%30)<1&&Math.abs(z*30%30)<1)continue;let X=x*30+(Math.random()-.5)*12,Z=z*30+(Math.random()-.5)*12;if(Math.abs(X%30)<8||Math.abs(Z%30)<8)continue;let h=8+Math.random()*28,w=9+Math.random()*8,d=9+Math.random()*8;let b=box(X,h/2,Z,w,h,d,buildingM[Math.floor(Math.random()*buildingM.length)]);if(h>23){let roof=box(X,h+1,Z,w*.35,2,d*.35,mat(0x66747c));}}
+for(let i=0;i<18;i++){let x=(Math.random()-.5)*300,z=(Math.random()-.5)*300;if(Math.abs(x%30)<10||Math.abs(z%30)<10)continue;let h=35+Math.random()*40;box(x,h/2,z,12,h,12,buildingM[i%5]);for(let y=5;y<h;y+=5)box(x,y,z,12.1,.25,12.1,mat(0x536b79))}
+const carM=[0xc8443b,0x2c6eaa,0xe0d6bd,0x30363d,0xd1a52d].map(mat);
+for(let i=0;i<34;i++){let vertical=Math.random()>.5;let lane=(Math.floor(Math.random()*7)-3)*30;let pos=(Math.random()-.5)*330;let x=vertical?lane+(Math.random()>.5?3:-3):pos,z=vertical?pos:lane+(Math.random()>.5?3:-3);let c=box(x,.8,z,2.1,1.1,4.2,carM[i%5]);box(x,.9,z,1.8,.7,1.8,mat(0x8cb7c7));}
+const player=new THREE.Group();scene.add(player);
+const skin=mat(0xd5a27e),jacket=mat(0x2675a9),pants=mat(0x263342),shoe=mat(0x20252b),hair=mat(0x30251f);
+function part(parent,geo,m,x,y,z){let a=new THREE.Mesh(geo,m);a.position.set(x,y,z);parent.add(a);return a}
+part(player,new THREE.CylinderGeometry(.22,.25,.72,7),jacket,0,1.12,0);
+part(player,new THREE.SphereGeometry(.23,10,8),skin,0,1.68,0);
+part(player,new THREE.SphereGeometry(.235,10,7,0,Math.PI*2,0,Math.PI*.55),hair,0,1.76,-.015);
+part(player,new THREE.BoxGeometry(.38,.12,.28),jacket,0,1.48,0);
+for(let s of [-1,1]){let leg=part(player,new THREE.CylinderGeometry(.105,.12,.72,7),pants,s*.13,.48,0);leg.rotation.z=s*-.04;part(player,new THREE.BoxGeometry(.2,.13,.34),shoe,s*.13,.11,.08);let arm=part(player,new THREE.CylinderGeometry(.075,.09,.65,7),jacket,s*.29,1.14,0);arm.rotation.z=s*.18;part(player,new THREE.SphereGeometry(.085,7,6),skin,s*.3,.79,0)}
+player.position.set(0,0,3);
+let yaw=0,pitch=-.16,vy=0,grounded=true,keys={};let started=false;
+function lock(){renderer.domElement.requestPointerLock?.()}
+document.getElementById('play').onclick=()=>{document.getElementById('start').style.display='none';started=true;lock()};
+document.addEventListener('pointerlockchange',()=>{});
+document.addEventListener('mousemove',e=>{if(document.pointerLockElement===renderer.domElement){yaw-=e.movementX*.0025;pitch=Math.max(-.65,Math.min(.25,pitch-e.movementY*.002))}});
+document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='Escape')document.exitPointerLock?.();if(e.code==='Space'&&grounded){vy=7;grounded=false}});
+document.addEventListener('keyup',e=>keys[e.code]=false);
+function animate(){requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.04);if(started){let f=(keys.KeyW?1:0)-(keys.KeyS?1:0),r=(keys.KeyD?1:0)-(keys.KeyA?1:0);let len=Math.hypot(f,r)||1;f/=len;r/=len;let speed=keys.ShiftLeft?11:6;let dx=(-Math.sin(yaw)*f+Math.cos(yaw)*r)*speed*dt,dz=(-Math.cos(yaw)*f-Math.sin(yaw)*r)*speed*dt;player.position.x+=dx;player.position.z+=dz;if(f||r)player.rotation.y=Math.atan2(-dx,-dz);vy-=19*dt;player.position.y+=vy*dt;if(player.position.y<0){player.position.y=0;vy=0;grounded=true}let target=new THREE.Vector3(player.position.x+Math.sin(yaw)*7,player.position.y+2.7,player.position.z+Math.cos(yaw)*7);camera.position.lerp(target,.18);camera.lookAt(player.position.x,player.position.y+1.1,player.position.z)}renderer.render(scene,camera)}
+const clock=new THREE.Clock();camera.position.set(0,3,10);animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+</script></body></html>
